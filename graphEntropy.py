@@ -1,4 +1,5 @@
 from heapq import nlargest
+from collections import Counter
 import math
 import networkx as nx
 import sys
@@ -24,19 +25,22 @@ def read_input():
     # print(list(get_subgraph_component(G)))
     # calc_and_cut_max_betweenness(G)
     # nx.density(G)
-    select_seed_node(G)
-    sorted_result = sort_result(cluster_result_list)
+    #select_seed_node(G)
+    #print(cluster_coefficient(G))
+    #get_degree(G)
+    #sorted_result = sort_result(cluster_result_list)
     # print(sorted_result)
-    print("number of cluster: " + str(len(sorted_result)))
+    #print("number of cluster: " + str(len(sorted_result)))
+    sort_node(G)
 
-    for cluster_dict in sorted_result:
-        print(str(cluster_dict.__getitem__('size')) + ": " + str(cluster_dict.__getitem__('cluster')))
-    pass
+    #for cluster_dict in sorted_result:
+     #   print(str(cluster_dict.__getitem__('size')) + ": " + str(cluster_dict.__getitem__('cluster')))
+    #pass
 
 
 # select seed node
 def select_seed_node(G):
-    list = nx.degree(G)
+    node_degree_list = nx.degree(G)
     print(list)
 
 
@@ -51,6 +55,15 @@ def sort_result(cluster_result_list):
 # Remove a neighbor of the seed
 # return new cluster
 def remove_neighbor_of_seed(G, cluster, seed):
+
+    #for node in G.neighbors(seed):
+    seed_neighbors = G.neighbors(seed)
+    seed_neighbors_degreeView = G.degree(seed_neighbors)
+    seed_neighbors_degreeView_sorted = sort_by_degree(seed_neighbors_degreeView)
+    print(seed_neighbors_degreeView_sorted)
+
+    #for node in seed_neighbors_degreeView_sorted
+
     current_cluster = cluster
     current_entropy = get_cluster_entropy(G, current_cluster)
 
@@ -59,6 +72,20 @@ def remove_neighbor_of_seed(G, cluster, seed):
 
 
     pass
+
+
+# sort by degree then by cluster coefficient
+def sort_node(G):
+    node_attribute_list = []
+    for node in G.nodes():
+        degree = nx.degree(G, node)
+        cluster_coef = cluster_coefficient(G, node)
+        node_dict = {"node": node, "degree": degree, "cluster_coef": cluster_coef}
+        node_attribute_list.append(node_dict)
+
+    sorted_node_list = sorted(node_attribute_list, key=lambda x: (-x.__getitem__("degree"), -x.__getitem__("cluster_coef")))
+
+    print(sorted_node_list)
 
 
 # get seed node
@@ -73,10 +100,39 @@ def get_degree(G, node):
     pass
 
 
+# sort by degree
+def sort_by_degree(nd_view):
+    sorted_degree = sorted(nd_view, key=lambda x: x[1], reverse=True)
+    # print(sorted_degree)  # [('1', 11), ('22', 11), ('2', 10), ('15', 9),
+    return sorted_degree
+    pass
+
+
 # get cluster coefficient
 # return cluster coefficient
-def get_cluster_coefficient(G, node):
-    pass
+def cluster_coefficient(G, nodes=None):
+    td_iter = count_triangle(G, nodes)
+    clusterc = {v: 0 if t == 0 else t / (d * (d - 1)) for
+                v, d, t, _ in td_iter}
+
+    if nodes in G:
+        # Return the value of the sole entry in the dictionary.
+        return clusterc[nodes]
+    return clusterc
+
+
+# number of triangle in neighbors
+def count_triangle(G, nodes=None):
+    if nodes is None:
+        nodes_nbrs = G.adj.items()
+    else:
+        nodes_nbrs = ((n, G[n]) for n in G.nbunch_iter(nodes))
+
+    for v, v_nbrs in nodes_nbrs:
+        vs = set(v_nbrs) - {v}
+        gen_degree = Counter(len(vs & (set(G[w]) - {w})) for w in vs)
+        ntriangles = sum(k * val for k, val in gen_degree.items())
+        yield (v, len(vs), ntriangles, gen_degree)
 
 
 # get cluster entropy
