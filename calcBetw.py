@@ -142,8 +142,8 @@ def calc_edge_betweenness(G):
         S, P, sigma = bfs_shortest_path(G, s)
         # accumulate betweeneess
         betweenness = accumulate_betweenness(betweenness, S, P, sigma, s)
-    #for n in G:  # remove nodes to only return edges
-        #del betweenness[n]
+    for n in G:  # remove nodes to only return edges
+        del betweenness[n]
     return betweenness  # Dictionary of edges with betweenness as the value. Ex: {('YBR160W', 'YBR135W'): 26754.0707,
     pass
 
@@ -188,8 +188,8 @@ def accumulate_betweenness(betweenness, S, P, sigma, s):
             else:
                 betweenness[(v, w)] += c
             delta[v] += c
-        #if w != s:
-            #betweenness[w] += delta[w]
+        if w != s:
+            betweenness[w] += delta[w]
     return betweenness
     pass
 
