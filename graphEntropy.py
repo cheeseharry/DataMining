@@ -6,7 +6,7 @@ import networkx as nx
 import sys
 sys.setrecursionlimit(1000000)  # set the maximum depth as 1000000
 
-
+# maintain seed node to avoid duplicate cluster
 cluster_node = set()
 cluster_result_list = []
 
@@ -59,6 +59,7 @@ def find_cluster(G, seed_node):
     last_added_cluster, last_iter_added_entropy = add_node_on_outer_boundary(G, removed_cluster)
     new_added_cluster, new_iter_added_entropy = add_node_on_outer_boundary(G, last_added_cluster)
 
+    # iteration add until get the minimum entropy
     while new_iter_added_entropy < last_iter_added_entropy:
         last_iter_added_entropy = copy.deepcopy(new_iter_added_entropy)
         new_added_cluster, new_iter_added_entropy = add_node_on_outer_boundary(G, new_added_cluster)
@@ -248,4 +249,15 @@ def get_vertex_entropy(G, cluster, node):
     return ev
 
 
-read_input()
+# f-measure
+def fmeasure(result_list):
+    complexes_file = open("assignment5_complexes.txt")
+    for line in complexes_file.readlines():
+        line = line.split()
+        print(line)
+        pass
+    pass
+
+
+#read_input()
+fmeasure(cluster_result_list)
